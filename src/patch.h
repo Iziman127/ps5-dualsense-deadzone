@@ -12,6 +12,10 @@ struct dz_state {
 };
 int dz_read(struct dz_state *out);
 const unsigned char *dz_active_sample(const unsigned char *records, uint64_t *stamp);
+/* Where the handle caches live on layouts that have no 0x20018 record table. */
+#define DZ_REC_OFF 0x24000
+#define DZ_REC_LEN 0x10000
+int dz_pad_sample(int pid, uintptr_t pad, const unsigned char **data, uint64_t *stamp);
 int dz_apply(const struct dz_config *config, int enabled);
 const char *dz_error(void);
 int dz_read_remote(int pid, uintptr_t addr, void *buf, size_t size);

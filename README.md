@@ -94,8 +94,15 @@ one. Two instances cannot share port 8089.
 
 ## Compatibility
 
-Tested on firmware 10.20. Other firmwares are not tested: expect a clean
-refusal (with the reason in the UI) rather than a broken patch.
+Tested on firmware 10.20 and 13.60. The payload reads the layout from the
+library instead of assuming one: the 10.20 reader offsets, its shared-library
+import window and its six import slots are used when they are there, and
+otherwise the readers come from `kernel_dynlib_dlsym` and the import slots from
+the home screen's own image (the 13.60 shape). The live read-out tries the
+10.20 record table first and falls back to the library's rw- segment. Another
+firmware is refused cleanly, with the reason in the UI, rather than patched
+blind. What 13.60 needed, with the measurements, is in
+[FIRMWARE-13.60.md](FIRMWARE-13.60.md).
 
 - **Layout discovery**: the five controller-reader functions are resolved by
   name inside the target process (`kernel_dynlib_dlsym`) and cross-checked

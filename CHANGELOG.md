@@ -2,6 +2,16 @@
 
 ## Changelog
 
+### Unreleased
+
+- Support firmware 13.60 without changing the 10.20 path. The reader set, the
+  import-slot window and the slot count are taken from the library when the
+  10.20 layout is not recognised, and the live read-out falls back to the
+  library's rw- segment when the 0x20018 record table is absent.
+- Accept a reader thunk whose `jmp rel32` displacement itself contains `0xe9`
+  (13.60's `scePadReadStateExt` is `ba 01 00 00 00 e9 c6 e9 ff ff`). The old
+  rule demanded exactly one `e9` in the first nine bytes and rejected it.
+
 ### v0.1
 
 First public release.

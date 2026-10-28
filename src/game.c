@@ -256,11 +256,9 @@ void game_read(struct game_status *out) {
     memset(out,0,sizeof(*out));
     out->pid=game.pid;out->supported=game.supported;out->enabled=game.enabled;out->config=game.config;out->imports=game.count;out->error=game.error?game.error:"";
     if (!game.pid || !game.supported) return;
-    unsigned char *records=malloc(0x8ae0);if (!records) { out->error="Out of memory reading game input";return; }
-    if (read_at(game.pad+0x20018,records,0x8ae0)) { out->error="Cannot read game controller";free(records);return; }
-    uint64_t best;const unsigned char *sample=dz_active_sample(records,&best);
+    uint64_t best=0;const unsigned char *sample=NULL;
+    if (dz_pad_sample(game.pid,game.pad,&sample,&best)) { out->error="Cannot read game controller";return; }
     out->input=(struct dz_state){.pid=game.pid,.enabled=game.enabled,.config=game.config};
     if (dz_sample(&out->input,&game.observation,sample,best,dz_milliseconds()))
         out->error="Monotonic clock unavailable";
-    free(records);
 }

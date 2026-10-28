@@ -41,12 +41,14 @@ static int dz_pad_thunks(pid_t pid, uintptr_t pad, const uintptr_t funcs[DZ_PAD_
     for (int i = 0; i < 4; ++i) {
         unsigned char code[10]; /* xor r,r;jmp (7) or mov r,imm32;jmp (10) */
         if (read(pid, funcs[i], code, sizeof(code))) return -1;
+        /* The thunk is a 2-byte prologue (xor r,r) or a 5-byte mov imm32,
+         * then one jmp rel32. Only the opcode that follows the prologue may be
+         * taken: the rel32 displacement can contain 0xe9 itself (13.60's
+         * scePadReadStateExt jumps with c6 e9 ff ff), so a rule that demands
+         * exactly one 0xe9 in the window rejects a valid thunk. */
         int jump = -1;
-        for (int j = 0; j < 9; ++j) if (code[j] == 0xe9) {
-            if (jump >= 0) return -1;
-            jump = j;
-        }
-        if (jump < 2) return -1;
+        for (int j = 2; j < 9; ++j) if (code[j] == 0xe9) { jump = j; break; }
+        if (jump < 0) return -1;
         int32_t rel;
         memcpy(&rel, code + jump + 1, 4);
         common[i] = (uintptr_t)((int64_t)funcs[i] + jump + 5 + rel);
